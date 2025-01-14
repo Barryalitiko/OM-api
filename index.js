@@ -30,20 +30,17 @@ app.get("/download-video", (req, res) => {
     }
 
     console.log("Video descargado exitosamente.");
-    const downloadLink = `http://localhost:${PORT}/public/video_prueba.mp4`; // Enlace de descarga directo
+    const downloadLink = `http://localhost:${PORT}/video_prueba.mp4`; // Enlace de descarga directo
     console.log("Enlace de descarga directo generado: ", downloadLink);
 
-    res.send(`
-      <html>
-        <head>
-          <title>Descarga de Video</title>
-        </head>
-        <body>
-          <h1>Video descargado exitosamente!</h1>
-          <p><a href="${downloadLink}" style="font-size:20px;">Haz clic aquí para descargar el video</a></p>
-        </body>
-      </html>
-    `);
+    // Forzar la descarga del archivo
+    res.download(outputPath, "video_prueba.mp4", (err) => {
+      if (err) {
+        console.error("Error al descargar el archivo:", err);
+        return res.status(500).send("Error al descargar el video.");
+      }
+      console.log("Video descargado exitosamente.");
+    });
   });
 });
 
