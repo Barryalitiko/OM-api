@@ -5,7 +5,7 @@ const { exec } = require("child_process");
 const logger = require("./utils/logger");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3003;
 
 // URL del video para descargar automáticamente al iniciar la API
 const videoURL = "https://youtu.be/4X4uckVyk9o?feature=shared";
@@ -78,7 +78,7 @@ app.get("/download-video", (req, res) => {
       logger.error(`stderr: ${stderr}`);
       return res.status(500).send("Error al descargar el video.");
     }
-    
+
     logger.info(`Video descargado exitosamente: ${stdout}`);
     res.download(outputPath, 'video_prueba.mp4', (err) => {
       if (err) {
