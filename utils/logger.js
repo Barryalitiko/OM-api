@@ -1,17 +1,14 @@
 const winston = require('winston');
 
-// Configuración del logger
 const logger = winston.createLogger({
-  level: 'info', // El nivel de log que queremos
+  level: 'info',
   format: winston.format.combine(
-    winston.format.timestamp(), // Agregar la marca de tiempo
-    winston.format.printf(({ timestamp, level, message }) => {
-      return `${timestamp} ${level}: ${message}`;
-    })
+    winston.format.colorize(),
+    winston.format.simple()
   ),
   transports: [
-    new winston.transports.Console(), // Imprimir los logs en la consola
-    new winston.transports.File({ filename: 'api.log' }) // Guardar los logs en el archivo api.log
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: 'api.log' })
   ]
 });
 
