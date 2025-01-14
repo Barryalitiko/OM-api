@@ -68,9 +68,13 @@ app.get("/public-files", (req, res) => {
 
 // Ruta para descargar el video y generar el enlace directo
 app.get("/download-video", (req, res) => {
+  console.log("Verificando si el video ya está descargado...");
+  
   // Verificar si el archivo ya existe antes de intentar descargarlo
   fs.exists(outputPath, (exists) => {
     if (!exists) {
+      console.log("El video no existe, iniciando la descarga...");
+      
       // Ejecutar la descarga del video cuando se encienda la API
       exec(command, (error, stdout, stderr) => {
         if (error) {
@@ -81,7 +85,7 @@ app.get("/download-video", (req, res) => {
           logger.error(`stderr: ${stderr}`);
           return res.status(500).send("Error durante la descarga.");
         }
-        
+
         // Video descargado exitosamente, imprimir el enlace en la consola
         const downloadUrl = `http://localhost:${PORT}/public/video_prueba.mp4`;
         logger.info(`Video descargado exitosamente. Enlace de descarga directo: ${downloadUrl}`);
@@ -90,6 +94,8 @@ app.get("/download-video", (req, res) => {
         res.json({ downloadUrl });
       });
     } else {
+      console.log("El video ya está descargado.");
+      
       // El video ya está descargado, simplemente responder con el enlace directo
       const downloadUrl = `http://localhost:${PORT}/public/video_prueba.mp4`;
       logger.info(`El video ya está descargado. Enlace de descarga directo: ${downloadUrl}`);
