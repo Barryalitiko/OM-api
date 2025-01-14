@@ -1,25 +1,24 @@
-// routes/console-log.js
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const router = express.Router();
 
-// Asumiendo que los registros se guardan en un archivo de texto
-const logFilePath = path.join(__dirname, '../logs/api.log');
+const logFilePath = path.join(__dirname, '..', 'api.log');
 
-router.get("/", (req, res) => {
+// Ruta para ver los registros de la consola
+router.get('/', (req, res) => {
   fs.readFile(logFilePath, 'utf8', (err, data) => {
     if (err) {
-      return res.status(500).send("Error al leer los registros.");
+      res.status(500).send('Error al leer los registros.');
+      return;
     }
-
     res.send(`
       <html>
-        <head><title>Registros de la Consola</title></head>
+        <head><title>Console Logs</title></head>
         <body>
-          <h1>Registros de la API</h1>
+          <h1>Registros de la consola</h1>
           <pre>${data}</pre>
-          <a href="/">Volver al menú</a>
+          <p><a href="/">Volver al menú</a></p>
         </body>
       </html>
     `);
