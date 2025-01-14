@@ -1,29 +1,27 @@
-// routes/file-list.js
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  const publicDir = path.join(__dirname, '../public');
+const publicDir = path.join(__dirname, '..', 'public');
+
+// Ruta para ver los archivos en la carpeta 'public'
+router.get('/', (req, res) => {
   fs.readdir(publicDir, (err, files) => {
     if (err) {
-      return res.status(500).send("Error al leer los archivos.");
+      res.status(500).send('Error al leer los archivos.');
+      return;
     }
-
-    const fileList = files.map(file => {
+    const fileLinks = files.map(file => {
       return `<li><a href="/public/${file}" target="_blank">${file}</a></li>`;
     }).join('');
-
     res.send(`
       <html>
-        <head><title>Lista de Archivos</title></head>
+        <head><title>Archivos en Public</title></head>
         <body>
-          <h1>Archivos en la carpeta 'public'</h1>
-          <ul>
-            ${fileList}
-          </ul>
-          <a href="/">Volver al menú</a>
+          <h1>Archivos disponibles en public:</h1>
+          <ul>${fileLinks}</ul>
+          <p><a href="/">Volver al menú</a></p>
         </body>
       </html>
     `);
