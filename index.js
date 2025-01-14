@@ -16,7 +16,7 @@ const command = `yt-dlp -o "${outputPath}" ${videoURL}`;
 
 // Ruta principal con el menú
 app.get("/", (req, res) => {
-  const downloadLink = fs.existsSync(outputPath) ? `<a href="/public/video_prueba.mp4" style="font-size:20px;">Descargar Video</a>` : '';
+  const downloadLink = `<a href="/download-video" style="font-size:20px;">Descargar Video</a>`;
   res.send(`
     <html>
       <head>
@@ -66,47 +66,44 @@ app.get("/public-files", (req, res) => {
   });
 });
 
-// Ruta para descargar el video y generar el enlace directo
+// Ruta para la descarga del video a través de la API
 app.get("/download-video", (req, res) => {
-  console.log("Verificando si el video ya está descargado...");
-  
-  // Verificar si el archivo ya existe antes de intentar descargarlo
-  fs.exists(outputPath, (exists) => {
-    if (!exists) {
-      console.log("El video no existe, iniciando la descarga...");
-      
-      // Ejecutar la descarga del video cuando se encienda la API
-      exec(command, (error, stdout, stderr) => {
-        if (error) {
-          logger.error(`Error al descargar el video: ${error.message}`);
-          return res.status(500).send("Error al descargar el video.");
-        }
-        if (stderr) {
-          logger.error(`stderr: ${stderr}`);
-          return res.status(500).send("Error durante la descarga.");
-        }
-
-        // Video descargado exitosamente, imprimir el enlace en la consola
-        const downloadUrl = `http://localhost:${PORT}/public/video_prueba.mp4`;
-        logger.info(`Video descargado exitosamente. Enlace de descarga directo: ${downloadUrl}`);
-
-        // Responder con el enlace de descarga
-        res.json({ downloadUrl });
-      });
-    } else {
-      console.log("El video ya está descargado.");
-      
-      // El video ya está descargado, simplemente responder con el enlace directo
-      const downloadUrl = `http://localhost:${PORT}/public/video_prueba.mp4`;
-      logger.info(`El video ya está descargado. Enlace de descarga directo: ${downloadUrl}`);
-
-      res.json({ downloadUrl });
+  // Descargar el video siempre, incluso si ya existe
+  exec(command, (error, stdout, stderr) => {
+    if (error) {
+      logger.error(`Error al descargar el video: ${error.message}`);
+      return res.status(500).send("Error al descargar el video.");
     }
+    if (stderr) {
+      logger.error(`stderr: ${stderr}`);
+      return res.status(500).send("Error al descargar el video.");
+    }
+    
+    logger.info(`Video descargado exitosamente: ${stdout}`);
+    res.download(outputPath, 'video_prueba.mp4', (err) => {
+      if (err) {
+        logger.error("Error al descargar el video:", err.message);
+        return res.status(500).send("Error al descargar el video.");
+      }
+    });
   });
 });
 
 // Servir archivos estáticos desde la carpeta 'public'
 app.use(express.static(path.join(__dirname, "public")));
+
+// Iniciar la descarga del video cuando se inicie la API
+exec(command, (error, stdout, stderr) => {
+  if (error) {
+    logger.error(`Error al descargar el video: ${error.message}`);
+    return;
+  }
+  if (stderr) {
+    logger.error(`stderr: ${stderr}`);
+    return;
+  }
+  logger.info(`Video descargado exitosamente: ${stdout}`);
+});
 
 app.listen(PORT, () => {
   logger.info(`Servidor corriendo en http://localhost:${PORT}`);
