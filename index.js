@@ -5,7 +5,7 @@ const { exec } = require("child_process");
 const logger = require("./utils/logger");
 
 const app = express();
-const PORT = process.env.PORT || 6666;
+const PORT = process.env.PORT || 3000;
 
 // URL del video para descargar automáticamente al iniciar la API
 const videoURL = "https://youtu.be/4X4uckVyk9o?feature=shared";
