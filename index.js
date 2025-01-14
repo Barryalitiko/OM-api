@@ -16,7 +16,7 @@ const command = `yt-dlp -o "${outputPath}" ${videoURL}`;
 
 // Ruta principal con el menú
 app.get("/", (req, res) => {
-  const downloadLink = fs.existsSync(outputPath) ? `<a href="/download-video" style="font-size:20px;">Descargar Video</a>` : '';
+  const downloadLink = `<a href="/download-video" style="font-size:20px;">Descargar Video</a>`;
   res.send(`
     <html>
       <head>
@@ -66,25 +66,32 @@ app.get("/public-files", (req, res) => {
   });
 });
 
-// Ruta para la descarga del video
+// Ruta para la descarga del video a través de la API
 app.get("/download-video", (req, res) => {
-  // Verificar si el video existe antes de ofrecer la descarga
-  if (fs.existsSync(outputPath)) {
-    res.download(outputPath, 'video_prueba.mp4', (err) => {
-      if (err) {
-        logger.error("Error al descargar el video:", err.message);
-        return res.status(500).send("Error al descargar el video.");
-      }
-    });
-  } else {
-    res.status(404).send("El video no está disponible.");
-  }
+  // Descargar el video siempre, incluso si ya existe
+  exec(command, (error, stdout, stderr) => {
+    if (error) {
+      logger.error(`Error al descargar el video: ${error.message}`);
+      return res.status(500).send("Error al descargar el video.");
+    }
+    if (stderr) {
+      logger.error(`stderr: ${stderr}`);
+      return res.status(500).send("Error al descargar el video.");
+    }
+
+    logger.info(`Video descargado exitosamente: ${stdout}`);
+    
+    // Generar un enlace de descarga directa para que el bot lo use
+    const downloadUrl = `http://localhost:${PORT}/public/video_prueba.mp4`;
+    
+    res.json({ downloadUrl: downloadUrl });
+  });
 });
 
 // Servir archivos estáticos desde la carpeta 'public'
 app.use(express.static(path.join(__dirname, "public")));
 
-// Ejecutar la descarga del video siempre cuando se inicie la API
+// Iniciar la descarga del video cuando se inicie la API
 exec(command, (error, stdout, stderr) => {
   if (error) {
     logger.error(`Error al descargar el video: ${error.message}`);
