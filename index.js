@@ -1,10 +1,11 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const logger = require("./utils/logger");
+const { exec } = require("child_process");
+const logger = require("./utils/logger"); // Importar el logger
 
 const app = express();
-const PORT = process.env.PORT || 6666; // Puerto actualizado a 6666
+const PORT = process.env.PORT || 6666;
 
 // URL del video para descargar automáticamente al iniciar la API
 const videoURL = "https://youtu.be/4X4uckVyk9o?feature=shared";
@@ -26,17 +27,24 @@ app.get("/public/video_prueba.mp4", (req, res) => {
 // Servir archivos estáticos desde la carpeta 'public'
 app.use(express.static(path.join(__dirname, "public")));
 
-// Ejecutar la descarga del video cuando se encienda la API
-exec(command, (error, stdout, stderr) => {
-  if (error) {
-    console.error(`Error al descargar el video: ${error.message}`);
-    return;
+// Verificar si el archivo ya existe antes de intentar descargarlo
+fs.exists(outputPath, (exists) => {
+  if (!exists) {
+    // Ejecutar la descarga del video cuando se encienda la API
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        logger.error(`Error al descargar el video: ${error.message}`); // Usar logger para errores
+        return;
+      }
+      if (stderr) {
+        logger.error(`stderr: ${stderr}`); // Usar logger para stderr
+        return;
+      }
+      logger.info(`Video descargado exitosamente: ${stdout}`);
+    });
+  } else {
+    logger.info("El video ya está descargado, no es necesario volver a descargarlo.");
   }
-  if (stderr) {
-    console.error(`stderr: ${stderr}`);
-    return;
-  }
-  console.log(`Video descargado exitosamente: ${stdout}`);
 });
 
 app.listen(PORT, () => {
