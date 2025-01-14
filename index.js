@@ -16,7 +16,7 @@ const command = `yt-dlp -o "${outputPath}" ${videoURL}`;
 
 // Ruta principal con el menú
 app.get("/", (req, res) => {
-  const downloadLink = fs.existsSync(outputPath) ? `<a href="/public/video_prueba.mp4" style="font-size:20px;">Descargar Video</a>` : '';
+  const downloadLink = fs.existsSync(outputPath) ? `<a href="/download-video" style="font-size:20px;">Descargar Video</a>` : '';
   res.send(`
     <html>
       <head>
@@ -64,6 +64,21 @@ app.get("/public-files", (req, res) => {
       </html>
     `);
   });
+});
+
+// Ruta para la descarga del video
+app.get("/download-video", (req, res) => {
+  // Verificar si el video existe antes de ofrecer la descarga
+  if (fs.existsSync(outputPath)) {
+    res.download(outputPath, 'video_prueba.mp4', (err) => {
+      if (err) {
+        logger.error("Error al descargar el video:", err.message);
+        return res.status(500).send("Error al descargar el video.");
+      }
+    });
+  } else {
+    res.status(404).send("El video no está disponible.");
+  }
 });
 
 // Servir archivos estáticos desde la carpeta 'public'
